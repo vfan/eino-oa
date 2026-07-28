@@ -37,7 +37,6 @@ func main() {
 	gradeHandler := handler.NewGradeHandler(gradeSvc)
 
 	r := gin.Default()
-	r.Use(corsMiddleware())
 
 	api := r.Group("/api")
 	studentHandler.Register(api)
@@ -65,18 +64,5 @@ func main() {
 	log.Printf("服务启动在 :%s", cfg.ServerPort)
 	if err := r.Run(":" + cfg.ServerPort); err != nil {
 		log.Fatalf("服务启动失败: %v", err)
-	}
-}
-
-func corsMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", "*")
-		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		c.Header("Access-Control-Allow-Headers", "Content-Type, Authorization")
-		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(http.StatusNoContent)
-			return
-		}
-		c.Next()
 	}
 }

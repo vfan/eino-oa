@@ -10,6 +10,7 @@ import (
 	"github.com/cloudwego/eino/flow/agent/react"
 	"github.com/cloudwego/eino/schema"
 	agenttools "github.com/wuhaitao/eino-oa/backend/internal/agent/tools"
+	reportservice "github.com/wuhaitao/eino-oa/backend/internal/report"
 	"github.com/wuhaitao/eino-oa/backend/internal/service"
 )
 
@@ -31,6 +32,12 @@ func NewChatAgent(ctx context.Context, apiKey, model, baseURL string,
 		return nil, fmt.Errorf("初始化ChatModel失败: %w", err)
 	}
 
+	reportChain, err := reportservice.NewChain(ctx, chatModel)
+	if err != nil {
+		return nil, err
+	}
+	reportSvc := reportservice.NewService(studentSvc, gradeSvc, reportChain)
+
 	allTools := []tool.BaseTool{
 		agenttools.NewQueryStudentTool(studentSvc),
 		agenttools.NewAddStudentTool(studentSvc),
@@ -42,7 +49,7 @@ func NewChatAgent(ctx context.Context, apiKey, model, baseURL string,
 		agenttools.NewUpdateGradeTool(gradeSvc),
 		agenttools.NewGradeAnalysisTool(gradeSvc),
 		agenttools.NewAcademicWarningTool(gradeSvc),
-		agenttools.NewStudentReportTool(gradeSvc, studentSvc),
+		agenttools.NewStudentReportTool(reportSvc),
 	}
 
 	toolsConfig := compose.ToolsNodeConfig{
@@ -52,9 +59,19 @@ func NewChatAgent(ctx context.Context, apiKey, model, baseURL string,
 	a, err := react.NewAgent(ctx, &react.AgentConfig{
 		ToolCallingModel: chatModel,
 		ToolsConfig:      toolsConfig,
-		MessageModifier: func(ctx context.Context, input []*schema.Message) []*schema.Message {
-			systemMsg := schema.SystemMessage(
-				`你是大学生信息管理系统的AI助手。你可以帮助用户：
+		MessageModifier:  buildSystemMessage,
+		MaxStep:          10,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("创建Agent失败: %w", err)
+	}
+
+	return &ChatAgent{agent: a}, nil
+}
+
+func buildSystemMessage(_ context.Context, input []*schema.Message) []*schema.Message {
+	systemMsg := schema.SystemMessage(
+		`你是大学生信息管理系统的AI助手。你可以帮助用户：
 1. 查询、新增、修改、删除学生信息
 2. 查询课程信息
 3. 查询、录入、修改成绩
@@ -64,22 +81,14 @@ func NewChatAgent(ctx context.Context, apiKey, model, baseURL string,
 
 请根据用户的自然语言请求，调用合适的工具完成任务。回答时请使用中文，语气友好专业。
 如果需要先查询才能获取ID等信息，请先调用查询工具。`)
-			res := make([]*schema.Message, 0, len(input)+1)
-			res = append(res, systemMsg)
-			res = append(res, input...)
-			return res
-		},
-		MaxStep: 10,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("创建Agent失败: %w", err)
-	}
-
-	return &ChatAgent{agent: a}, nil
+	result := make([]*schema.Message, 0, len(input)+1)
+	result = append(result, systemMsg)
+	result = append(result, input...)
+	return result
 }
 
 type ChatRequest struct {
-	Message string          `json:"message"`
+	Message string           `json:"message"`
 	History []HistoryMessage `json:"history,omitempty"`
 }
 

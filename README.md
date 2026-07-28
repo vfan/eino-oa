@@ -51,6 +51,10 @@ npm run dev
 
 访问 http://localhost:3000 即可使用。
 
+前端开发服务器通过 Vite Proxy 将 `/api` 转发到
+`http://localhost:8080`。后端不开放跨域；生产环境应由 Nginx 或网关
+在同一域名下分别转发静态资源和 `/api`。
+
 ### 3. Skill 对外技能
 
 `skills/` 目录下的 Skill 文档可被外部 AI Agent（如 OpenClaw）加载：
@@ -85,6 +89,7 @@ eino-oa/
       service/         业务逻辑层
       handler/         HTTP Handler
       agent/           Eino Agent + Tools
+      report/          ChatTemplate + Chain 学业报告
     config/            配置管理
   frontend/
     src/

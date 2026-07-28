@@ -9,6 +9,7 @@ import (
 	"github.com/cloudwego/eino/components/tool/utils"
 	"github.com/cloudwego/eino/schema"
 	"github.com/wuhaitao/eino-oa/backend/internal/model"
+	reportservice "github.com/wuhaitao/eino-oa/backend/internal/report"
 	"github.com/wuhaitao/eino-oa/backend/internal/repository"
 	"github.com/wuhaitao/eino-oa/backend/internal/service"
 )
@@ -177,40 +178,24 @@ func NewAcademicWarningTool(svc *service.GradeService) tool.InvokableTool {
 	)
 }
 
-func NewStudentReportTool(gradeSvc *service.GradeService, studentSvc *service.StudentService) tool.InvokableTool {
+func NewStudentReportTool(reportSvc *reportservice.Service) tool.InvokableTool {
 	return utils.NewTool(
 		&schema.ToolInfo{
 			Name: "student_report",
-			Desc: "生成学生综合报告，包含学生基本信息、所有成绩、GPA等。",
+			Desc: "生成结构化学生综合报告，包含总结、学习优势、薄弱课程和下一步建议。",
 			ParamsOneOf: schema.NewParamsOneOfByParams(map[string]*schema.ParameterInfo{
 				"student_id": {Type: "integer", Desc: "学生ID（必填）", Required: true},
 			}),
 		},
 		func(ctx context.Context, input *studentReportInput) (output string, err error) {
-			student, err := studentSvc.GetByID(input.StudentID)
+			result, err := reportSvc.Generate(ctx, input.StudentID)
 			if err != nil {
-				return "", fmt.Errorf("学生不存在: %w", err)
+				return "", err
 			}
-
-			grades, err := gradeSvc.List(repository.GradeQuery{
-				StudentID: input.StudentID,
-				PageSize:  100,
-			})
+			data, err := json.Marshal(result)
 			if err != nil {
-				return "", fmt.Errorf("查询成绩失败: %w", err)
+				return "", fmt.Errorf("序列化报告失败: %w", err)
 			}
-
-			gpa, err := gradeSvc.CalculateGPA(input.StudentID)
-			if err != nil {
-				return "", fmt.Errorf("计算GPA失败: %w", err)
-			}
-
-			report := map[string]interface{}{
-				"student": student,
-				"grades":  grades.Items,
-				"gpa":     gpa,
-			}
-			data, _ := json.Marshal(report)
 			return string(data), nil
 		},
 	)

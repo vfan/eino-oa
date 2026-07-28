@@ -57,11 +57,11 @@ func NewQueryStudentTool(svc *service.StudentService) tool.InvokableTool {
 			Name: "query_student",
 			Desc: "查询学生信息。可按学号、姓名、院系、专业、状态进行模糊搜索。返回匹配的学生列表。",
 			ParamsOneOf: schema.NewParamsOneOfByParams(map[string]*schema.ParameterInfo{
-				"student_no":  {Type: "string", Desc: "学号（支持模糊匹配）"},
-				"name":        {Type: "string", Desc: "姓名（支持模糊匹配）"},
-				"department":  {Type: "string", Desc: "院系"},
-				"major":       {Type: "string", Desc: "专业"},
-				"status":      {Type: "string", Desc: "状态：在读、休学、毕业、退学"},
+				"student_no": {Type: "string", Desc: "学号（支持模糊匹配）"},
+				"name":       {Type: "string", Desc: "姓名（支持模糊匹配）"},
+				"department": {Type: "string", Desc: "院系"},
+				"major":      {Type: "string", Desc: "专业"},
+				"status":     {Type: "string", Desc: "状态：在读、休学、毕业、退学"},
 			}),
 		},
 		func(ctx context.Context, input *queryStudentInput) (output string, err error) {
@@ -76,7 +76,10 @@ func NewQueryStudentTool(svc *service.StudentService) tool.InvokableTool {
 			if err != nil {
 				return "", fmt.Errorf("查询失败: %w", err)
 			}
-			data, _ := json.Marshal(result)
+			data, err := json.Marshal(result)
+			if err != nil {
+				return "", fmt.Errorf("序列化查询结果失败: %w", err)
+			}
 			return string(data), nil
 		},
 	)
