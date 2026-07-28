@@ -8,6 +8,8 @@ import {
   UserOutlined,
   MessageOutlined,
 } from '@ant-design/icons';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { sessionApi } from '../../services/api';
 import type { ChatSession, ChatMessageItem } from '../../services/api';
 
@@ -217,7 +219,13 @@ export default function ChatPage() {
                     <div style={{ fontSize: 12, marginBottom: 4, opacity: 0.7 }}>
                       {msg.role === 'user' ? <><UserOutlined /> 你</> : <><RobotOutlined /> AI 助手</>}
                     </div>
-                    <Text style={{ color: 'inherit', whiteSpace: 'pre-wrap' }}>{msg.content}</Text>
+                    {msg.role === 'user' ? (
+                      <Text style={{ color: 'inherit', whiteSpace: 'pre-wrap' }}>{msg.content}</Text>
+                    ) : (
+                      <div className="markdown-body">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
