@@ -78,6 +78,16 @@ func (h *CourseHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, course)
 }
 
+type courseUpdateInput struct {
+	CourseCode  *string  `json:"course_code"`
+	Name        *string  `json:"name"`
+	Credits     *float64 `json:"credits"`
+	Department  *string  `json:"department"`
+	Teacher     *string  `json:"teacher"`
+	Semester    *string  `json:"semester"`
+	Description *string  `json:"description"`
+}
+
 func (h *CourseHandler) Update(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
@@ -85,18 +95,44 @@ func (h *CourseHandler) Update(c *gin.Context) {
 		return
 	}
 
-	var course model.Course
-	if err := c.ShouldBindJSON(&course); err != nil {
+	var input courseUpdateInput
+	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	course.ID = uint(id)
 
-	if err := h.svc.Update(&course); err != nil {
+	existing, err := h.svc.GetByID(uint(id))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "课程不存在"})
+		return
+	}
+	if input.CourseCode != nil {
+		existing.CourseCode = *input.CourseCode
+	}
+	if input.Name != nil {
+		existing.Name = *input.Name
+	}
+	if input.Credits != nil {
+		existing.Credits = *input.Credits
+	}
+	if input.Department != nil {
+		existing.Department = *input.Department
+	}
+	if input.Teacher != nil {
+		existing.Teacher = *input.Teacher
+	}
+	if input.Semester != nil {
+		existing.Semester = *input.Semester
+	}
+	if input.Description != nil {
+		existing.Description = *input.Description
+	}
+
+	if err := h.svc.Update(existing); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, course)
+	c.JSON(http.StatusOK, existing)
 }
 
 func (h *CourseHandler) Delete(c *gin.Context) {

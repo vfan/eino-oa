@@ -126,3 +126,60 @@ body {
   border: none;
   border-top: 1px solid #e0e0e0;
 }
+
+/* 登录页 */
+.app-loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f7fa;
+}
+
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background:
+    radial-gradient(1000px 500px at 10% 0%, #e8f1ff 0%, transparent 55%),
+    radial-gradient(800px 400px at 95% 100%, #e6fbf3 0%, transparent 55%),
+    #f6f8fb;
+}
+
+.login-card {
+  width: min(420px, 100%);
+  border-radius: 18px;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.12);
+  padding: 12px 8px;
+}
+
+.login-brand {
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  font-weight: 700;
+  color: #2563eb;
+  margin-bottom: 10px;
+}
+
+.login-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 8px;
+  color: #0f172a;
+}
+
+.login-foot {
+  margin: 22px 0 0;
+  font-size: 12px;
+  line-height: 1.7;
+  color: #94a3b8;
+}
+
+.login-foot code {
+  background: #f1f5f9;
+  border-radius: 4px;
+  padding: 1px 5px;
+  color: #475569;
+}

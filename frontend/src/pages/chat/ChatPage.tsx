@@ -107,14 +107,15 @@ export default function ChatPage() {
       if (messages.length === 0) {
         loadSessions();
       }
-    } catch {
+    } catch (err) {
+      const detail = (err as { response?: { data?: { error?: string } } }).response?.data?.error;
       setMessages(prev => [
         ...prev,
         {
           id: Date.now() + 1,
           session_id: activeId,
           role: 'assistant',
-          content: 'AI 助手暂不可用，请确认后端已配置 DEEPSEEK_API_KEY。',
+          content: detail || 'AI 助手暂不可用，请确认后端已配置 DEEPSEEK_API_KEY。',
           created_at: new Date().toISOString(),
         },
       ]);

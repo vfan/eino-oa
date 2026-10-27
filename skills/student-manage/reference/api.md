@@ -4,6 +4,18 @@
 
 使用环境变量 `EINO_OA_BASE_URL` 指定，例如 `http://localhost:8080/api`。
 
+## 鉴权
+
+所有接口都需要请求头：
+
+```
+Authorization: Bearer $EINO_OA_API_TOKEN
+```
+
+- 未携带或令牌失效：`401`
+- 只读令牌调用写接口：`403`
+- 令牌管理接口（`/auth/tokens`）只接受浏览器登录态
+
 ## 学生管理
 
 | 方法   | 路径             | 说明         |

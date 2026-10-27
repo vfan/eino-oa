@@ -13,17 +13,17 @@ func NewSessionRepo(db *gorm.DB) *SessionRepo {
 	return &SessionRepo{db: db}
 }
 
-func (r *SessionRepo) List() ([]model.ChatSession, error) {
+func (r *SessionRepo) List(userID uint) ([]model.ChatSession, error) {
 	var sessions []model.ChatSession
-	err := r.db.Order("updated_at DESC").Find(&sessions).Error
+	err := r.db.Where("user_id = ?", userID).Order("updated_at DESC").Find(&sessions).Error
 	return sessions, err
 }
 
-func (r *SessionRepo) GetByID(id string) (*model.ChatSession, error) {
+func (r *SessionRepo) GetByID(userID uint, id string) (*model.ChatSession, error) {
 	var s model.ChatSession
 	err := r.db.Preload("Messages", func(db *gorm.DB) *gorm.DB {
 		return db.Order("chat_messages.id ASC")
-	}).First(&s, "id = ?", id).Error
+	}).First(&s, "id = ? AND user_id = ?", id, userID).Error
 	return &s, err
 }
 
@@ -31,12 +31,14 @@ func (r *SessionRepo) Create(s *model.ChatSession) error {
 	return r.db.Create(s).Error
 }
 
-func (r *SessionRepo) UpdateTitle(id, title string) error {
-	return r.db.Model(&model.ChatSession{}).Where("id = ?", id).Update("title", title).Error
+func (r *SessionRepo) UpdateTitle(userID uint, id, title string) error {
+	return r.db.Model(&model.ChatSession{}).
+		Where("id = ? AND user_id = ?", id, userID).
+		Update("title", title).Error
 }
 
-func (r *SessionRepo) Delete(id string) error {
-	return r.db.Where("id = ?", id).Delete(&model.ChatSession{}).Error
+func (r *SessionRepo) Delete(userID uint, id string) error {
+	return r.db.Where("id = ? AND user_id = ?", userID, id).Delete(&model.ChatSession{}).Error
 }
 
 func (r *SessionRepo) AddMessage(msg *model.ChatMessage) error {

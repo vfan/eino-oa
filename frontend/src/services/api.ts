@@ -5,6 +5,18 @@ const api = axios.create({
   timeout: 10000,
 });
 
+// 401 时通知全局 AuthProvider 回到登录页；登录接口本身除外。
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const url = String(error.config?.url || '');
+    if (error.response?.status === 401 && !url.includes('/auth/login')) {
+      window.dispatchEvent(new Event('eo:unauthorized'));
+    }
+    return Promise.reject(error);
+  },
+);
+
 export interface PaginatedResult<T> {
   items: T[];
   total: number;
@@ -109,6 +121,7 @@ export const gradeApi = {
 
 export interface ChatSession {
   id: string;
+  user_id?: number;
   title: string;
   created_at: string;
   updated_at: string;
@@ -133,6 +146,44 @@ export const sessionApi = {
   delete: (id: string) => api.delete(`/sessions/${id}`),
   chat: (id: string, message: string) =>
     api.post<{ reply: string }>(`/sessions/${id}/chat`, { message }, { timeout: 120000 }),
+};
+
+// ---------- 鉴权 ----------
+
+export interface CurrentUser {
+  id: number;
+  username: string;
+  display_name: string;
+  role: string;
+  auth_method: 'session' | 'pat' | 'oauth';
+  scopes: string[];
+}
+
+export interface AccessToken {
+  id: number;
+  name: string;
+  kind: string;
+  prefix: string;
+  scopes: string;
+  expires_at: string | null;
+  last_used_at: string | null;
+  revoked_at: string | null;
+  created_at: string;
+}
+
+export const authApi = {
+  login: (username: string, password: string) =>
+    api.post<{ user: CurrentUser }>('/auth/login', { username, password }),
+  logout: () => api.post('/auth/logout'),
+  me: () => api.get<CurrentUser>('/auth/me'),
+};
+
+export const tokenApi = {
+  list: () => api.get<AccessToken[]>('/auth/tokens'),
+  create: (data: { name: string; scopes: string; expires_in_days: number }) =>
+    api.post<{ token: string; item: AccessToken }>('/auth/tokens', data),
+  revoke: (id: number) => api.delete(`/auth/tokens/${id}`),
+  revokeOAuth: () => api.delete<{ message: string; revoked: number }>('/auth/oauth-tokens'),
 };
 
 export default api;

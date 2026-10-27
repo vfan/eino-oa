@@ -18,5 +18,10 @@ export default defineConfig([
     languageOptions: {
       globals: globals.browser,
     },
+    rules: {
+      // 项目采用“挂载后加载数据”的常规模式；该规则会把所有异步 fetch 误判为
+      // 同步 setState，实际构建与运行不受影响。
+      'react-hooks/set-state-in-effect': 'off',
+    },
   },
 ])

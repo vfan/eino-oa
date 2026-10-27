@@ -14,6 +14,7 @@ metadata:
         - curl
       env:
         - EINO_OA_BASE_URL
+        - EINO_OA_API_TOKEN
     primaryEnv: EINO_OA_BASE_URL
 ---
 
@@ -27,12 +28,34 @@ metadata:
 
 使用环境变量 `EINO_OA_BASE_URL` 指定后端地址，例如 `http://localhost:8080/api`。
 
+## 鉴权（必须）
+
+所有接口都需要访问令牌：
+
+```bash
+export EINO_OA_API_TOKEN="eo_pat_xxx"
+```
+
+令牌获取方式：
+
+1. 登录 Web 系统 →「访问令牌」→「新建令牌」，选择「只读」或「读写」。
+2. 或运行 `eino-oa-cli login --server http://localhost:8080`，在浏览器中同意授权；
+   之后用 `eino-oa-cli token` 获取短期令牌（过期自动续期）。
+
+本文档所有 `curl` 示例都已包含：
+
+```bash
+-H "Authorization: Bearer $EINO_OA_API_TOKEN"
+```
+
+没有令牌返回 `401`；只读令牌调用新增/修改/删除接口返回 `403`。
+
 ## 可用接口
 
 ### 学生查询
 
 ```bash
-curl "$EINO_OA_BASE_URL/students?name=张三&department=计算机学院&status=在读"
+curl -H "Authorization: Bearer $EINO_OA_API_TOKEN" "$EINO_OA_BASE_URL/students?name=张三&department=计算机学院&status=在读"
 ```
 
 支持的查询参数（均可选）：`name`、`student_no`、`department`、`major`、`status`、`page`、`page_size`。
@@ -40,21 +63,21 @@ curl "$EINO_OA_BASE_URL/students?name=张三&department=计算机学院&status=�
 
 示例：
 ```bash
-curl "$EINO_OA_BASE_URL/students?name=张三"
-curl "$EINO_OA_BASE_URL/students?department=计算机学院&status=在读"
-curl "$EINO_OA_BASE_URL/students"                # 查询全部
+curl -H "Authorization: Bearer $EINO_OA_API_TOKEN" "$EINO_OA_BASE_URL/students?name=张三"
+curl -H "Authorization: Bearer $EINO_OA_API_TOKEN" "$EINO_OA_BASE_URL/students?department=计算机学院&status=在读"
+curl -H "Authorization: Bearer $EINO_OA_API_TOKEN" "$EINO_OA_BASE_URL/students"                # 查询全部
 ```
 
 ### 获取单个学生
 
 ```bash
-curl "$EINO_OA_BASE_URL/students/1"
+curl -H "Authorization: Bearer $EINO_OA_API_TOKEN" "$EINO_OA_BASE_URL/students/1"
 ```
 
 ### 新增学生
 
 ```bash
-curl -X POST "$EINO_OA_BASE_URL/students" \
+curl -H "Authorization: Bearer $EINO_OA_API_TOKEN" -X POST "$EINO_OA_BASE_URL/students" \
   -H "Content-Type: application/json" \
   -d '{
     "student_no": "2024010",
@@ -73,7 +96,7 @@ curl -X POST "$EINO_OA_BASE_URL/students" \
 ### 修改学生
 
 ```bash
-curl -X PUT "$EINO_OA_BASE_URL/students/1" \
+curl -H "Authorization: Bearer $EINO_OA_API_TOKEN" -X PUT "$EINO_OA_BASE_URL/students/1" \
   -H "Content-Type: application/json" \
   -d '{"name": "张三丰", "phone": "13900001111"}'
 ```
@@ -81,13 +104,13 @@ curl -X PUT "$EINO_OA_BASE_URL/students/1" \
 ### 删除学生
 
 ```bash
-curl -X DELETE "$EINO_OA_BASE_URL/students/1"
+curl -H "Authorization: Bearer $EINO_OA_API_TOKEN" -X DELETE "$EINO_OA_BASE_URL/students/1"
 ```
 
 ### 课程查询
 
 ```bash
-curl "$EINO_OA_BASE_URL/courses?name=数据结构&teacher=李教授&semester=2025-2026-1"
+curl -H "Authorization: Bearer $EINO_OA_API_TOKEN" "$EINO_OA_BASE_URL/courses?name=数据结构&teacher=李教授&semester=2025-2026-1"
 ```
 
 支持的查询参数（均可选）：`name`、`course_code`、`teacher`、`semester`。
@@ -95,13 +118,13 @@ curl "$EINO_OA_BASE_URL/courses?name=数据结构&teacher=李教授&semester=202
 ### 获取单个课程
 
 ```bash
-curl "$EINO_OA_BASE_URL/courses/1"
+curl -H "Authorization: Bearer $EINO_OA_API_TOKEN" "$EINO_OA_BASE_URL/courses/1"
 ```
 
 ### 新增课程
 
 ```bash
-curl -X POST "$EINO_OA_BASE_URL/courses" \
+curl -H "Authorization: Bearer $EINO_OA_API_TOKEN" -X POST "$EINO_OA_BASE_URL/courses" \
   -H "Content-Type: application/json" \
   -d '{
     "course_code": "CS201",
@@ -116,7 +139,7 @@ curl -X POST "$EINO_OA_BASE_URL/courses" \
 ### 删除课程
 
 ```bash
-curl -X DELETE "$EINO_OA_BASE_URL/courses/1"
+curl -H "Authorization: Bearer $EINO_OA_API_TOKEN" -X DELETE "$EINO_OA_BASE_URL/courses/1"
 ```
 
 ## 输出格式

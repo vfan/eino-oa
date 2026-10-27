@@ -118,11 +118,11 @@ func (r *GradeRepo) StatsByCourse(courseID uint) (*GradeStats, error) {
 }
 
 type StudentGPA struct {
-	StudentID   uint    `json:"student_id"`
-	StudentNo   string  `json:"student_no"`
-	StudentName string  `json:"student_name"`
-	GPA         float64 `json:"gpa"`
-	TotalCourses int    `json:"total_courses"`
+	StudentID    uint    `json:"student_id"`
+	StudentNo    string  `json:"student_no"`
+	StudentName  string  `json:"student_name"`
+	GPA          float64 `json:"gpa"`
+	TotalCourses int     `json:"total_courses"`
 }
 
 func (r *GradeRepo) CalculateGPA(studentID uint) (*StudentGPA, error) {

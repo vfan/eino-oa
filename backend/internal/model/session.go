@@ -4,6 +4,7 @@ import "time"
 
 type ChatSession struct {
 	ID        string        `json:"id" gorm:"primaryKey;size:36"`
+	UserID    uint          `json:"user_id" gorm:"index;not null;default:0"`
 	Title     string        `json:"title" gorm:"size:200"`
 	CreatedAt time.Time     `json:"created_at"`
 	UpdatedAt time.Time     `json:"updated_at"`

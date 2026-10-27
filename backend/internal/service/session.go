@@ -14,18 +14,19 @@ func NewSessionService(repo *repository.SessionRepo) *SessionService {
 	return &SessionService{repo: repo}
 }
 
-func (s *SessionService) List() ([]model.ChatSession, error) {
-	return s.repo.List()
+func (s *SessionService) List(userID uint) ([]model.ChatSession, error) {
+	return s.repo.List(userID)
 }
 
-func (s *SessionService) GetByID(id string) (*model.ChatSession, error) {
-	return s.repo.GetByID(id)
+func (s *SessionService) GetByID(userID uint, id string) (*model.ChatSession, error) {
+	return s.repo.GetByID(userID, id)
 }
 
-func (s *SessionService) Create(title string) (*model.ChatSession, error) {
+func (s *SessionService) Create(userID uint, title string) (*model.ChatSession, error) {
 	session := &model.ChatSession{
-		ID:    uuid.New().String(),
-		Title: title,
+		ID:     uuid.New().String(),
+		UserID: userID,
+		Title:  title,
 	}
 	if err := s.repo.Create(session); err != nil {
 		return nil, err
@@ -33,8 +34,8 @@ func (s *SessionService) Create(title string) (*model.ChatSession, error) {
 	return session, nil
 }
 
-func (s *SessionService) Delete(id string) error {
-	return s.repo.Delete(id)
+func (s *SessionService) Delete(userID uint, id string) error {
+	return s.repo.Delete(userID, id)
 }
 
 func (s *SessionService) AddMessage(sessionID, role, content string) (*model.ChatMessage, error) {
@@ -54,6 +55,6 @@ func (s *SessionService) GetMessages(sessionID string) ([]model.ChatMessage, err
 	return s.repo.GetMessages(sessionID)
 }
 
-func (s *SessionService) UpdateTitle(id, title string) error {
-	return s.repo.UpdateTitle(id, title)
+func (s *SessionService) UpdateTitle(userID uint, id, title string) error {
+	return s.repo.UpdateTitle(userID, id, title)
 }

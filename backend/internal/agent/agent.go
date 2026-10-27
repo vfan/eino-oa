@@ -120,7 +120,3 @@ func (ca *ChatAgent) Chat(ctx context.Context, req *ChatRequest) (*ChatResponse,
 
 	return &ChatResponse{Reply: resp.Content}, nil
 }
-
-func (ca *ChatAgent) GetTools() []tool.InvokableTool {
-	return nil
-}

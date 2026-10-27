@@ -14,6 +14,7 @@ metadata:
         - curl
       env:
         - EINO_OA_BASE_URL
+        - EINO_OA_API_TOKEN
     primaryEnv: EINO_OA_BASE_URL
 ---
 
@@ -27,12 +28,33 @@ metadata:
 
 使用环境变量 `EINO_OA_BASE_URL` 指定后端地址，例如 `http://localhost:8080/api`。
 
+## 鉴权（必须）
+
+所有接口都需要访问令牌：
+
+```bash
+export EINO_OA_API_TOKEN="eo_pat_xxx"
+```
+
+本技能只读取数据，建议创建**只读**令牌：
+
+1. 登录 Web 系统 →「访问令牌」→「新建令牌」→ 权限选择「只读」。
+2. 或运行 `eino-oa-cli login --server http://localhost:8080`，授权时只申请 `read`。
+
+本文档所有 `curl` 示例都已包含：
+
+```bash
+-H "Authorization: Bearer $EINO_OA_API_TOKEN"
+```
+
+没有令牌返回 `401`；只读令牌调用写接口返回 `403`。
+
 ## 可用接口
 
 ### 成绩查询
 
 ```bash
-curl "$EINO_OA_BASE_URL/grades?student_id=1&course_id=2&semester=2025-2026-1"
+curl -H "Authorization: Bearer $EINO_OA_API_TOKEN" "$EINO_OA_BASE_URL/grades?student_id=1&course_id=2&semester=2025-2026-1"
 ```
 
 支持的查询参数（均可选）：`student_id`、`course_id`、`semester`。返回成绩列表，包含学生和课程详情。
@@ -40,7 +62,7 @@ curl "$EINO_OA_BASE_URL/grades?student_id=1&course_id=2&semester=2025-2026-1"
 ### 成绩录入
 
 ```bash
-curl -X POST "$EINO_OA_BASE_URL/grades" \
+curl -H "Authorization: Bearer $EINO_OA_API_TOKEN" -X POST "$EINO_OA_BASE_URL/grades" \
   -H "Content-Type: application/json" \
   -d '{"student_id": 1, "course_id": 2, "score": 85, "semester": "2025-2026-1"}'
 ```
@@ -65,7 +87,7 @@ curl -X POST "$EINO_OA_BASE_URL/grades" \
 ### 修改成绩
 
 ```bash
-curl -X PUT "$EINO_OA_BASE_URL/grades/1" \
+curl -H "Authorization: Bearer $EINO_OA_API_TOKEN" -X PUT "$EINO_OA_BASE_URL/grades/1" \
   -H "Content-Type: application/json" \
   -d '{"score": 90}'
 ```
@@ -73,7 +95,7 @@ curl -X PUT "$EINO_OA_BASE_URL/grades/1" \
 ### 课程成绩分析
 
 ```bash
-curl "$EINO_OA_BASE_URL/grades/stats/course/1"
+curl -H "Authorization: Bearer $EINO_OA_API_TOKEN" "$EINO_OA_BASE_URL/grades/stats/course/1"
 ```
 
 返回平均分、最高分、最低分、及格率、参考人数。
@@ -94,7 +116,7 @@ curl "$EINO_OA_BASE_URL/grades/stats/course/1"
 ### 学生 GPA 计算
 
 ```bash
-curl "$EINO_OA_BASE_URL/grades/gpa/student/1"
+curl -H "Authorization: Bearer $EINO_OA_API_TOKEN" "$EINO_OA_BASE_URL/grades/gpa/student/1"
 ```
 
 返回加权 GPA（按学分加权）。
@@ -102,7 +124,7 @@ curl "$EINO_OA_BASE_URL/grades/gpa/student/1"
 ### 学业预警
 
 ```bash
-curl "$EINO_OA_BASE_URL/grades/warning?threshold=2.0"
+curl -H "Authorization: Bearer $EINO_OA_API_TOKEN" "$EINO_OA_BASE_URL/grades/warning?threshold=2.0"
 ```
 
 查找 GPA 低于阈值的学生，默认阈值 2.0。
@@ -124,13 +146,13 @@ curl "$EINO_OA_BASE_URL/grades/warning?threshold=2.0"
 
 ```bash
 # 1. 获取学生信息
-curl "$EINO_OA_BASE_URL/students/1"
+curl -H "Authorization: Bearer $EINO_OA_API_TOKEN" "$EINO_OA_BASE_URL/students/1"
 
 # 2. 获取该学生所有成绩
-curl "$EINO_OA_BASE_URL/grades?student_id=1"
+curl -H "Authorization: Bearer $EINO_OA_API_TOKEN" "$EINO_OA_BASE_URL/grades?student_id=1"
 
 # 3. 获取该学生 GPA
-curl "$EINO_OA_BASE_URL/grades/gpa/student/1"
+curl -H "Authorization: Bearer $EINO_OA_API_TOKEN" "$EINO_OA_BASE_URL/grades/gpa/student/1"
 ```
 
 ## 典型分析场景
@@ -139,35 +161,35 @@ curl "$EINO_OA_BASE_URL/grades/gpa/student/1"
 
 ```bash
 # 1. 查找课程 ID
-curl "$EINO_OA_BASE_URL/courses?name=数据结构"
+curl -H "Authorization: Bearer $EINO_OA_API_TOKEN" "$EINO_OA_BASE_URL/courses?name=数据结构"
 
 # 2. 分析成绩（假设课程 ID 为 1）
-curl "$EINO_OA_BASE_URL/grades/stats/course/1"
+curl -H "Authorization: Bearer $EINO_OA_API_TOKEN" "$EINO_OA_BASE_URL/grades/stats/course/1"
 ```
 
 ### 场景2：学业预警
 
 ```bash
-curl "$EINO_OA_BASE_URL/grades/warning?threshold=2.0"
+curl -H "Authorization: Bearer $EINO_OA_API_TOKEN" "$EINO_OA_BASE_URL/grades/warning?threshold=2.0"
 ```
 
 ### 场景3：生成学生综合报告
 
 ```bash
 # 1. 搜索学生
-curl "$EINO_OA_BASE_URL/students?name=张三"
+curl -H "Authorization: Bearer $EINO_OA_API_TOKEN" "$EINO_OA_BASE_URL/students?name=张三"
 
 # 2. 获取详情 + 成绩 + GPA（假设学生 ID 为 1）
-curl "$EINO_OA_BASE_URL/students/1"
-curl "$EINO_OA_BASE_URL/grades?student_id=1"
-curl "$EINO_OA_BASE_URL/grades/gpa/student/1"
+curl -H "Authorization: Bearer $EINO_OA_API_TOKEN" "$EINO_OA_BASE_URL/students/1"
+curl -H "Authorization: Bearer $EINO_OA_API_TOKEN" "$EINO_OA_BASE_URL/grades?student_id=1"
+curl -H "Authorization: Bearer $EINO_OA_API_TOKEN" "$EINO_OA_BASE_URL/grades/gpa/student/1"
 ```
 
 ### 场景4：批量查看某学生的成绩
 
 ```bash
-curl "$EINO_OA_BASE_URL/grades?student_id=1"
-curl "$EINO_OA_BASE_URL/grades/gpa/student/1"
+curl -H "Authorization: Bearer $EINO_OA_API_TOKEN" "$EINO_OA_BASE_URL/grades?student_id=1"
+curl -H "Authorization: Bearer $EINO_OA_API_TOKEN" "$EINO_OA_BASE_URL/grades/gpa/student/1"
 ```
 
 详细示例请查看 [reference/examples.md](reference/examples.md)。
