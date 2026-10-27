@@ -6,7 +6,7 @@ React 19 + TypeScript + Ant Design 6 + Vite。包含学生 / 课程 / 成绩管�
 
 - Node.js 20.19+ 或 22.12+
 - npm 10+
-- 后端已启动（默认 `http://localhost:8080`）
+- 后端已启动（端口读取 `backend/.env` 的 `SERVER_PORT`）
 
 ## 启动开发服务器
 
@@ -27,7 +27,7 @@ Vite 会把以下路径代理到后端：
 | `/.well-known` | OAuth2 元数据 |
 | `/skills` | 技能文档下载 |
 
-默认代理目标是 `http://localhost:8080`。后端换端口时：
+Vite 启动时会读取 `backend/.env` 的 `SERVER_PORT` 作为代理目标，默认 `8080`。需要临时指向别的后端时：
 
 ```bash
 VITE_BACKEND_URL=http://localhost:8081 npm run dev
@@ -90,6 +90,6 @@ src/
 
 确认是通过 `http://localhost:3000` 访问，而不是直接打开 `dist/index.html`；Vite 代理只在开发服务器下生效。
 
-**修改后端端口后前端仍请求 8080**
+**修改后端端口后前端仍请求旧端口**
 
-用 `VITE_BACKEND_URL=http://localhost:新端口 npm run dev` 启动，或同步修改 `vite.config.ts` 的默认值。
+Vite 会读取 `backend/.env` 的 `SERVER_PORT`；如果后端是用环境变量临时换的端口，用 `VITE_BACKEND_URL=http://localhost:新端口 npm run dev` 启动。

@@ -75,8 +75,8 @@ npm run dev
 
 访问 <http://localhost:3000>，使用 `backend/.env` 里的管理员账号登录。
 
-Vite 会把 `/api`、`/oauth`、`/.well-known`、`/skills` 代理到后端（默认
-`http://localhost:8080`）。后端换端口时：
+Vite 会自动读取 `backend/.env` 的 `SERVER_PORT` 作为代理目标（默认 8080）。
+需要临时指向其他后端时：
 
 ```bash
 VITE_BACKEND_URL=http://localhost:8081 npm run dev

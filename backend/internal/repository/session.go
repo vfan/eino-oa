@@ -38,7 +38,7 @@ func (r *SessionRepo) UpdateTitle(userID uint, id, title string) error {
 }
 
 func (r *SessionRepo) Delete(userID uint, id string) error {
-	return r.db.Where("id = ? AND user_id = ?", userID, id).Delete(&model.ChatSession{}).Error
+	return r.db.Where("id = ? AND user_id = ?", id, userID).Delete(&model.ChatSession{}).Error
 }
 
 func (r *SessionRepo) AddMessage(msg *model.ChatMessage) error {

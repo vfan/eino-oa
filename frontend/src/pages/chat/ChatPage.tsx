@@ -53,6 +53,14 @@ export default function ChatPage() {
     }
   }, []);
 
+  // 会话列表加载完成后默认打开第一个会话；删除当前会话后也自动切到下一个。
+  useEffect(() => {
+    if (sessionsLoading || sessions.length === 0) return;
+    if (activeId && sessions.some(s => s.id === activeId)) return;
+    const first = sessions[0];
+    if (first) selectSession(first.id);
+  }, [sessionsLoading, sessions, activeId, selectSession]);
+
   const createSession = async () => {
     try {
       const res = await sessionApi.create();
